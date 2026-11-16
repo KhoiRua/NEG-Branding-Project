@@ -9,6 +9,7 @@
 /* Bố cục: khung xem trước nền tối chiếm bên trái, cột điều khiển 3 bước bên phải, thanh tải về ghim đáy cột. Màn hẹp: xếp dọc. */
 :root{
   --o900:#022E3C; --o800:#003E51; --o500:#005E80; --o300:#5C9DB5; --o100:#D6E6EC; --n50:#F7F4EE; --n900:#1F1E1B; --amber:#FFB81C;
+  --foot:116px;
   --ink:#1F1E1B; --soft:#56646A; --rule:#DDD8CC; --field:#FFFFFF;
 }
 *{box-sizing:border-box}
@@ -27,7 +28,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .view{display:flex;align-items:center;justify-content:center;padding:36px 40px;min-height:0;position:relative}
 canvas#out{max-width:100%;max-height:100%;width:auto;height:auto;display:block;outline:1px solid rgba(255,255,255,.14)}
 .view.drop::after{content:"Thả ảnh vào đây";position:absolute;inset:36px 40px;display:grid;place-items:center;font-size:18px;font-weight:600;background:rgba(2,46,60,.86);border:2px dashed var(--amber)}
-.report{padding:0 28px 20px;display:flex;flex-wrap:wrap;gap:6px 28px;align-items:baseline;font-size:13px;color:var(--o300);font-variant-numeric:tabular-nums}
+.foot{height:var(--foot);padding:0 28px 16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start;overflow:auto}
+.tips{margin:0;font-size:12.5px;color:var(--o300);max-width:64ch}
+.report{display:flex;flex-wrap:wrap;gap:6px 28px;align-items:baseline;font-size:13px;color:var(--o300);font-variant-numeric:tabular-nums}
 .report b{color:#fff;font-weight:600}
 .verdict{font-weight:600;color:#fff;display:flex;align-items:center;gap:8px}
 .verdict::before{content:"";width:8px;height:8px;border-radius:50%;background:#7FD1A5}
@@ -62,7 +65,13 @@ canvas#srcprev{width:88px;height:auto;display:block;border:1px solid var(--rule)
 .rows{display:grid;gap:10px;align-content:center}
 .crow{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:6px}
 .crow .lab{font-weight:600;font-size:13px}
-.sws{display:flex;flex-wrap:wrap;gap:8px}
+.bgs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.bgs button{border:0;background:none;padding:0;font-size:12px;text-align:left;line-height:1.3}
+.bgs i{display:block;height:34px;border-radius:6px;border:1px solid rgba(31,30,27,.22);margin-bottom:4px}
+.bgs button.on i{box-shadow:0 0 0 2px var(--n50),0 0 0 4px var(--o500)}
+.bgs button.on{font-weight:600}
+.crow{align-items:start}
+.sws{display:flex;flex-wrap:wrap;gap:6px}
 .sws button{width:28px;height:28px;border-radius:50%;padding:0;border:1px solid rgba(31,30,27,.22)}
 .sws button.on{box-shadow:0 0 0 2px var(--n50),0 0 0 4px var(--o500)}
 .sws button:disabled{opacity:.18;cursor:not-allowed}
@@ -104,7 +113,7 @@ details .hint{margin:8px 0 14px}
 .row output{font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
 .row select{grid-column:2 / 4;font:inherit;padding:6px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink);min-width:0;width:100%}
 input[type=range]{width:100%;min-width:0;accent-color:var(--o500)}
-.out{border-top:1px solid var(--rule);padding:14px 24px 16px;background:var(--field)}
+.out{border-top:1px solid var(--rule);padding:14px 24px 16px;background:var(--field);height:var(--foot)}
 .out .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .out button{border:1px solid var(--o500);border-radius:6px;padding:10px;font-weight:600;background:var(--field);color:var(--o500)}
 .out button.primary{background:var(--o500);color:#fff}
@@ -118,7 +127,10 @@ p.links{margin:18px 0 8px}
   html,body{height:auto}
   .app{display:block;height:auto}
   .stage{display:block}
-  .brand,.report{padding-left:16px;padding-right:16px}
+  .brand{padding-left:16px;padding-right:16px}
+  .foot{height:auto;display:block;padding:12px 16px 16px;overflow:visible}
+  .tips{margin-top:10px}
+  .out{height:auto}
   .view{padding:0 16px}
   canvas#out{max-height:70vh}
   .side{display:block;border-left:0}
@@ -135,7 +147,10 @@ p.links{margin:18px 0 8px}
       <div><h1>NEG Star Halftone</h1><p>Dựng hình bằng ngôi sao 4 cánh của logo NEG</p></div>
     </div>
     <div class="view" id="view"><canvas id="out" width="1080" height="1080" aria-label="Hình halftone kết quả"></canvas><div class="bbox" id="bbox" hidden></div></div>
-    <div class="report" id="report" aria-live="polite"></div>
+    <div class="foot">
+      <div class="report" id="report" aria-live="polite"></div>
+      <p class="tips" id="tips" hidden>Bấm vào ảnh để hiện khung bao. Kéo trong khung để dời ảnh, kéo góc hoặc cạnh để đổi cỡ, kéo ngay ngoài góc để xoay (giữ Shift: từng 15°). Chấm tròn là tâm xoay. Chuột phải trong khung để đặt lại hoặc sao chép riêng đối tượng.</p>
+    </div>
   </main>
   <aside class="side">
     <div class="steps">
@@ -150,7 +165,6 @@ p.links{margin:18px 0 8px}
           </div>
         </div>
         <div class="place" id="place" hidden>
-          <p class="hint">Bấm vào ảnh trên khung hình để hiện khung bao. Kéo trong khung để dời ảnh, kéo góc hoặc cạnh để đổi cỡ, kéo ngay ngoài góc để xoay (giữ Shift để xoay từng 15°). Chấm tròn là tâm xoay, kéo nó tới tâm hoặc một góc của khung. Chuột phải trong khung để đặt lại hoặc sao chép riêng đối tượng. Bấm ra ngoài để ẩn khung bao.</p>
           <div class="acts"><button type="button" id="recenter">Đưa ảnh về giữa</button><button type="button" id="lock" aria-pressed="true">Khoá tỷ lệ</button></div>
         </div>
       </section>
@@ -165,11 +179,11 @@ p.links{margin:18px 0 8px}
         <h2><span>3</span>Chọn màu và khổ</h2>
         <div class="pair">
           <div class="rows">
-            <div class="crow"><span class="lab">Nền</span><div class="sws" id="c_bg" role="group" aria-label="Màu nền"></div></div>
+            <div class="crow"><span class="lab">Nền</span><div class="bgs" id="c_bg" role="group" aria-label="Màu nền"></div></div>
             <div class="crow"><span class="lab">Sao</span><div class="sws" id="c_fg" role="group" aria-label="Màu sao"></div></div>
           </div>
         </div>
-        <p class="hint"><span id="pairname"></span> <button type="button" class="swap" id="swap">Đổi chỗ nền và sao</button></p>
+        <p class="hint"><span id="pairname"></span></p>
         <div class="ctl"><label class="check"><input type="checkbox" id="s_amber">Ngôi sao lớn nhất màu Amber</label></div>
         <div class="ctl"><span class="lab">Khổ</span><div class="ratios" id="s_ratio" role="group" aria-label="Khổ"></div></div>
       </section>
@@ -198,7 +212,7 @@ const STAR=new Path2D(starPath(1));
 const SYM="M 0 0 C 49.5 0 98.2 12.3 141.9 35.7 C 185.5 59.1 222.6 92.9 250 134.2 C 285.6 80.5 337.6 39.7 398.2 17.8 C 458.8 -4.1 524.9 -5.8 586.6 12.8 C 648.3 31.4 702.4 69.4 740.8 121.1 C 779.2 172.8 800 235.6 800 300 L 800 800 L 509.3 800 C 387.6 800 343.3 733.3 343.3 647.2 C 343.3 548.6 411.1 434.7 470.6 394.4 C 484.4 384.7 496.5 378.8 510.3 377.4 C 544 374.2 578.3 385.5 607.6 415.5 L 631.4 386.5 C 561.5 340.3 553.6 257.4 613.3 198.6 L 584.5 174.8 C 538.4 244.9 455.8 252.9 397.3 192.9 L 373.5 221.8 C 408.4 244.9 427.9 277.2 431.1 311.1 C 437.4 362.5 388.9 411.1 355.7 450 C 282.4 526.4 211.2 598.9 215.9 716.7 C 217.1 746.7 223.7 780.6 232 800 L 0 800 Z";
 const NEG="M 509.3 800 C 387.6 800 343.3 733.3 343.3 647.2 C 343.3 548.6 411.1 434.7 470.6 394.4 C 484.4 384.7 496.5 378.8 510.3 377.4 C 544 374.2 578.3 385.5 607.6 415.5 L 631.4 386.5 C 561.5 340.3 553.6 257.4 613.3 198.6 L 584.5 174.8 C 538.4 244.9 455.8 252.9 397.3 192.9 L 373.5 221.8 C 408.4 244.9 427.9 277.2 431.1 311.1 C 437.4 362.5 388.9 411.1 355.7 450 C 282.4 526.4 211.2 598.9 215.9 716.7 C 217.1 746.7 223.7 780.6 232 800 Z";
 
-const COLORS={"Orient 900":"#022E3C","Orient 800":"#003E51","Orient 500":"#005E80","Orient 300":"#5C9DB5","Orient 100":"#D6E6EC","Neutral 50":"#F7F4EE","Trắng":"#FFFFFF","Amber 400":"#FFB81C"};
+const COLORS={"Orient 900":"#022E3C","Orient 800":"#003E51","Orient 600":"#02526E","Orient 500":"#005E80","Orient 300":"#5C9DB5","Orient 100":"#D6E6EC","Neutral 50":"#F7F4EE","Trắng":"#FFFFFF","Amber 400":"#FFB81C"};
 const RATIOS={"1:1":[1080,1080],"4:5":[1080,1350],"16:9":[1600,900],"9:16":[1080,1920]};
 const SOURCES={glow:"Quầng sáng",linear:"Chuyển sắc chéo",symbol:"Symbol làm mờ",trail:"Vệt sao làm mờ",galaxy:"Dải ngân hà",upload:"Ảnh tải lên"};
 const GRIDS={square:"Vuông",brick:"So le",hex:"Lục giác",radial:"Đồng tâm",spiral:"Xoắn ốc",scatter:"Rải sao"};
@@ -233,6 +247,8 @@ const ADV=[
 function el(tag,props,...kids){const e=document.createElement(tag);Object.assign(e,props||{});e.append(...kids);return e;}
 function seg(id,names,fn){const box=$(id);for(const n of names){const b=el("button",{type:"button",textContent:n});b.dataset.v=n;b.addEventListener("click",()=>{fn(n);sync();render();});box.appendChild(b);}}
 function mark(id,v){$(id).querySelectorAll("button").forEach(b=>{const on=b.dataset.v===v;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});}
+// Nền có sẵn: [tên hiển thị, màu sao chọn trước]
+const BGS={"Orient 800":["Orient 800","Trắng"],"Orient 600":["Orient 600","Trắng"],"Neutral 50":["Paper","Orient 500"],"Amber 400":["Amber","Orient 800"]};
 const okPair=(fg,bg)=>contrast(COLORS[fg],COLORS[bg])>=2;
 const lightBg=()=>lum(COLORS[P.bg])>lum(COLORS[P.fg]);
 function autoInvert(){}
@@ -243,9 +259,10 @@ function buildUI(){
   seg("s_density",Object.keys(DENS),n=>{dens=n;P.cell=Math.round(SHORT()/DENS[n]);});
   seg("s_soft",Object.keys(SOFT),n=>{P.blur=SOFT[n];});
   seg("s_tone",Object.keys(TONE),n=>{[P.contrast,P.gamma]=TONE[n];});
-  for(const [key,label] of [["bg","Nền"],["fg","Sao"]]){const c=$("c_"+key);for(const [n,h] of Object.entries(COLORS)){const b=el("button",{type:"button",title:n+" "+h});b.style.background=h;b.setAttribute("aria-label",label+": "+n);b.dataset.v=n;
-    b.addEventListener("click",()=>{P[key]=n;if(key==="bg"&&!okPair(P.fg,n))P.fg=Object.keys(COLORS).sort((x,y)=>contrast(COLORS[y],COLORS[n])-contrast(COLORS[x],COLORS[n]))[0];autoInvert();sync();render();});c.appendChild(b);}}
-  $("swap").addEventListener("click",()=>{[P.bg,P.fg]=[P.fg,P.bg];autoInvert();sync();render();});
+  for(const [n,[name,fg]] of Object.entries(BGS)){const b=el("button",{type:"button",title:n+" "+COLORS[n]});b.dataset.v=n;b.innerHTML=`<i style="background:${COLORS[n]}"></i>${name}`;
+    b.addEventListener("click",()=>{P.bg=n;P.fg=fg;sync();render();});$("c_bg").appendChild(b);}
+  for(const [n,h] of Object.entries(COLORS)){const b=el("button",{type:"button",title:n+" "+h});b.style.background=h;b.setAttribute("aria-label","Sao: "+n);b.dataset.v=n;
+    b.addEventListener("click",()=>{P.fg=n;sync();render();});$("c_fg").appendChild(b);}
   const rt=$("s_ratio");for(const [n,[w,h]] of Object.entries(RATIOS)){const k=28/Math.max(w,h);const b=el("button",{type:"button"});b.dataset.v=n;
     b.innerHTML=`<span class="box"><i style="width:${Math.round(w*k)}px;height:${Math.round(h*k)}px"></i></span>${n}`;
     b.addEventListener("click",()=>{if(T){const [a,c]=RATIOS[P.ratio],k=Math.min(w,h)/Math.min(a,c);T.x*=w/a;T.y*=h/c;T.w*=k;T.h*=k;}P.ratio=n;if(dens)P.cell=Math.round(SHORT()/DENS[dens]);sync();render();});rt.appendChild(b);}
@@ -271,7 +288,7 @@ function sync(){
   $("c_fg").querySelectorAll("button").forEach(b=>{b.disabled=!okPair(b.dataset.v,P.bg);});
   $("pairname").textContent="Nền "+P.bg+", sao "+P.fg+".";
   const am=P.bg==="Amber 400"||P.fg==="Amber 400";$("s_amber").disabled=am;if(am)P.amber=0;
-  const up=P.source==="upload"&&!!upImg;$("place").hidden=!up;if(!up)sel=false;
+  const up=P.source==="upload"&&!!upImg;$("place").hidden=!up;$("tips").hidden=!up;if(!up)sel=false;
   mark("s_ratio",P.ratio);$("s_amber").checked=P.amber>0;$("s_invert").checked=!!P.invert;
 }
 let upRange=[0,1],lockRatio=true,T=null,sel=false;
