@@ -4,75 +4,153 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NEG Star Halftone</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: bảng điều khiển cố định bên trái, khung thử chiếm phần còn lại; xếp dọc ở màn hẹp */
+/* Bố cục: khung xem trước nền tối chiếm bên trái, cột điều khiển 3 bước bên phải, thanh tải về ghim đáy cột. Màn hẹp: xếp dọc. */
 :root{
-  --bg:#F7F4EE; --panel:#FFFFFF; --fg:#1F1E1B; --muted:#5F6B70; --line:#D6E6EC; --brand:#005E80; --brand-fg:#FFFFFF; --amber:#FFB81C; --chip:#EEF4F6;
-  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --o900:#022E3C; --o800:#003E51; --o500:#005E80; --o300:#5C9DB5; --o100:#D6E6EC; --n50:#F7F4EE; --n900:#1F1E1B; --amber:#FFB81C;
+  --ink:#1F1E1B; --soft:#56646A; --rule:#DDD8CC; --field:#FFFFFF;
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#00212C; --panel:#002F42; --fg:#EEF4F6; --muted:#9DBCC8; --line:#00465F; --brand:#5C9DB5; --brand-fg:#00212C; --amber:#FFB81C; --chip:#003E51; color-scheme:dark } }
-:root[data-theme="dark"]{ --bg:#00212C; --panel:#002F42; --fg:#EEF4F6; --muted:#9DBCC8; --line:#00465F; --brand:#5C9DB5; --brand-fg:#00212C; --amber:#FFB81C; --chip:#003E51; color-scheme:dark }
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.45;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-header{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;justify-content:space-between}
-h1{font-size:20px;font-weight:700;margin:0;letter-spacing:-.01em}
-header p{margin:0;color:var(--muted);max-width:70ch}
-.presets{display:flex;flex-wrap:wrap;gap:8px}
-button,.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:7px 12px;border-radius:6px;cursor:pointer}
-button:hover{border-color:var(--brand)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-button.on{background:var(--brand);color:var(--brand-fg);border-color:var(--brand)}
-button.primary{background:var(--brand);color:var(--brand-fg);border-color:var(--brand)}
-.main{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
-@media (max-width:860px){.main{grid-template-columns:minmax(0,1fr)}}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:14px}
-fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:9px;min-width:0}
-legend{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);padding:0;margin-bottom:8px}
-.row{display:grid;grid-template-columns:118px minmax(0,1fr) 46px;gap:8px;align-items:center}
-.row label{color:var(--muted)}
-.row output{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
-.row select,.row input[type=file]{grid-column:2 / 4;font:inherit;min-width:0;width:100%;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg)}
-input[type=range]{width:100%;accent-color:var(--brand);min-width:0}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chips button{padding:4px 9px;font-weight:500;font-size:12px}
-.sw{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid var(--line)}
-.sw.on{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber)}
-.stage{display:flex;flex-direction:column;gap:12px;min-width:0}
-.canvasbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;justify-content:center}
-.panel.simple [data-lock]{display:none}
-.canvasbox.drop{outline:3px dashed var(--amber);outline-offset:-6px}
-canvas#out{max-width:100%;max-height:74vh;height:auto;width:auto;display:block}
-.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-family:var(--mono);font-size:12px;color:var(--muted)}
-.meta b{color:var(--fg);font-weight:500}
-.warn{color:var(--fg);background:color-mix(in srgb,var(--amber) 25%,transparent);border-radius:6px;padding:6px 10px}
-.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-#msg{color:var(--muted)}
-.src{display:flex;gap:12px;align-items:center}
-canvas#srcprev{width:96px;height:auto;border:1px solid var(--line);border-radius:6px;flex:none}
-.src span{color:var(--muted);font-size:12px}
+html,body{height:100%;margin:0}
+body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.45;color:var(--ink);background:var(--n50)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,.upload:focus-within{outline:2px solid var(--amber);outline-offset:2px}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 392px;height:100vh;height:100dvh}
+
+/* Khung xem trước */
+.stage{background:var(--o900);color:#fff;display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-width:0;min-height:0}
+.brand{display:flex;align-items:center;gap:12px;padding:20px 28px}
+.brand svg{width:26px;height:26px;flex:none}
+.brand h1{font-size:16px;font-weight:700;letter-spacing:-.01em;margin:0}
+.brand p{margin:0;color:var(--o300);font-size:13px}
+.view{display:flex;align-items:center;justify-content:center;padding:8px 28px;min-height:0;position:relative}
+canvas#out{max-width:100%;max-height:100%;width:auto;height:auto;display:block;outline:1px solid rgba(255,255,255,.14)}
+.view.drop::after{content:"Thả ảnh vào đây";position:absolute;inset:8px 28px;display:grid;place-items:center;font-size:18px;font-weight:600;background:rgba(2,46,60,.86);border:2px dashed var(--amber)}
+.report{padding:16px 28px 20px;display:flex;flex-wrap:wrap;gap:6px 28px;align-items:baseline;font-size:13px;color:var(--o300);font-variant-numeric:tabular-nums}
+.report b{color:#fff;font-weight:600}
+.verdict{font-weight:600;color:#fff;display:flex;align-items:center;gap:8px}
+.verdict::before{content:"";width:8px;height:8px;border-radius:50%;background:#7FD1A5}
+.verdict.bad::before{background:var(--amber)}
+.notes{flex-basis:100%;margin:2px 0 0;padding:0;list-style:none;color:#fff}
+.notes li{padding-left:16px;position:relative}
+.notes li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;background:var(--amber)}
+
+/* Cột điều khiển */
+.side{display:grid;grid-template-rows:minmax(0,1fr) auto;border-left:1px solid var(--rule);min-height:0;background:var(--n50)}
+.steps{overflow:auto;padding:4px 24px 24px}
+.step{padding:22px 0;border-bottom:1px solid var(--rule)}
+.step h2{font-size:15px;font-weight:700;margin:0 0 14px;display:flex;gap:10px;align-items:baseline;letter-spacing:-.005em}
+.step h2 span{color:var(--o500);font-variant-numeric:tabular-nums}
+.ctl{margin-top:14px}
+.ctl:first-of-type{margin-top:0}
+.ctl>label,.ctl>.lab{display:block;font-weight:600;font-size:13px;margin-bottom:6px}
+.hint{color:var(--soft);font-size:12.5px;margin:6px 0 0}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--o500);border-radius:6px;overflow:hidden;background:var(--field)}
+.seg button{border:0;background:none;padding:8px 6px;font-weight:500;border-left:1px solid var(--o500)}
+.seg button:first-child{border-left:0}
+.seg button:hover{background:var(--o100)}
+.seg button.on{background:var(--o500);color:#fff}
+.srcrow{display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;align-items:start;margin-top:14px}
+canvas#srcprev{width:88px;height:auto;display:block;border:1px solid var(--rule);background:#000}
+.upload{display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--o500);border-radius:6px;padding:14px 10px;background:var(--field);font-weight:600;color:var(--o500);cursor:pointer;text-align:center}
+.upload:hover{background:var(--o100)}
+.upload input{position:absolute;opacity:0;width:1px;height:1px}
+.schemes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.schemes button{border:0;background:none;padding:0;text-align:left;font-size:12.5px}
+.schemes i{display:grid;place-items:center;aspect-ratio:1;border-radius:6px;border:1px solid var(--rule);margin-bottom:5px}
+.schemes svg{width:46%;height:46%}
+.schemes button.on i{box-shadow:0 0 0 2px var(--n50),0 0 0 4px var(--o500)}
+.schemes button.on{font-weight:600}
+.ratios{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ratios button{border:1px solid var(--rule);background:var(--field);border-radius:6px;padding:8px 4px 6px;display:grid;justify-items:center;gap:6px;font-weight:500;font-size:12.5px}
+.ratios i{display:block;border:1.5px solid currentColor;border-radius:1px}
+.ratios .box{height:30px;display:grid;place-items:center}
+.ratios button.on{border-color:var(--o500);background:var(--o500);color:#fff}
+.ctl>label.check{display:flex;gap:10px;margin:0;align-items:center;font-weight:500;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--o500);margin:0}
+details{padding:18px 0 4px}
+summary{font-weight:600;cursor:pointer;color:var(--o500)}
+details .hint{margin:8px 0 14px}
+.adv h3{font-size:13px;font-weight:700;margin:18px 0 8px}
+.row{display:grid;grid-template-columns:112px minmax(0,1fr) 54px;gap:8px;align-items:center;min-height:30px}
+.row label{color:var(--soft);font-size:13px}
+.row output{font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.row select{grid-column:2 / 4;font:inherit;padding:6px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink);min-width:0;width:100%}
+input[type=range]{width:100%;min-width:0;accent-color:var(--o500)}
+.sws{grid-column:2 / 4;display:flex;flex-wrap:wrap;gap:6px}
+.sws button{width:24px;height:24px;border-radius:50%;padding:0;border:1px solid var(--rule)}
+.sws button.on{box-shadow:0 0 0 2px var(--n50),0 0 0 4px var(--o500)}
+.out{border-top:1px solid var(--rule);padding:14px 24px 16px;background:var(--field)}
+.out .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.out button{border:1px solid var(--o500);border-radius:6px;padding:10px;font-weight:600;background:var(--field);color:var(--o500)}
+.out button.primary{background:var(--o500);color:#fff}
+.out button:hover{background:var(--o100)}
+.out button.primary:hover{background:var(--o800);border-color:var(--o800)}
+.out .links{display:flex;gap:18px;margin-top:10px;flex-wrap:wrap;align-items:baseline}
+.out .links button{border:0;padding:0;background:none;font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.out .links button:hover{background:none;color:var(--o800)}
+#msg{color:var(--soft);font-size:12.5px;margin:8px 0 0;min-height:1.45em}
+@media (max-width:900px){
+  html,body{height:auto}
+  .app{display:block;height:auto}
+  .stage{display:block}
+  .brand,.report{padding-left:16px;padding-right:16px}
+  .view{padding:0 16px}
+  canvas#out{max-height:70vh}
+  .side{display:block;border-left:0}
+  .steps{overflow:visible;padding:0 16px 16px}
+  .out{position:sticky;bottom:0;padding:12px 16px}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div><h1>NEG Star Halftone</h1><p>Halftone dùng ngôi sao 4 cánh của logo làm module. Chế độ Đơn giản khoá các thông số theo Chuẩn NEG và chỉ để lại phần cần chọn. Chế độ Đầy đủ mở mọi thông số để thử nghiệm.</p></div>
-    <div class="chips" role="group" aria-label="Chế độ"><button type="button" id="m_s">Đơn giản</button><button type="button" id="m_f">Đầy đủ</button></div>
-  </header>
-  <div class="presets" id="presets" role="group" aria-label="Mẫu cấu hình sẵn"></div>
-  <div class="main">
-    <div class="panel" id="panel"></div>
-    <div class="stage">
-      <div class="canvasbox"><canvas id="out" width="1080" height="1080" aria-label="Kết quả halftone"></canvas></div>
-      <div class="meta" id="meta"></div>
-      <div class="warn" id="warn" hidden></div>
-      <div class="src"><canvas id="srcprev" width="160" height="160"></canvas><span>Ảnh nguồn sau khi làm mờ và chỉnh tương phản. Vùng sáng cho sao lớn, vùng tối cho sao nhỏ. Để dùng ảnh của anh: bấm "Tải ảnh lên", kéo thả ảnh vào trang, hoặc dán ảnh bằng Ctrl+V.</span></div>
-      <div class="actions">
-        <button class="primary" id="dlsvg">Tải SVG</button><button id="dlpng">Tải PNG</button><button id="cpsvg">Sao chép SVG</button><button id="cpjson">Sao chép thông số</button><span id="msg" role="status"></span>
-      </div>
+<div class="app">
+  <main class="stage">
+    <div class="brand">
+      <svg viewBox="-1 -1 2 2" aria-hidden="true"><path id="mark" fill="#FFB81C" transform="rotate(-5.5)"/></svg>
+      <div><h1>NEG Star Halftone</h1><p>Dựng hình bằng ngôi sao 4 cánh của logo NEG</p></div>
     </div>
-  </div>
+    <div class="view" id="view"><canvas id="out" width="1080" height="1080" aria-label="Hình halftone kết quả"></canvas></div>
+    <div class="report" id="report" aria-live="polite"></div>
+  </main>
+  <aside class="side">
+    <div class="steps">
+      <section class="step">
+        <h2><span>1</span>Chọn ảnh nguồn</h2>
+        <div class="seg" id="s_source" role="group" aria-label="Ảnh nguồn có sẵn"></div>
+        <div class="srcrow">
+          <canvas id="srcprev" width="160" height="160" aria-label="Ảnh nguồn sau xử lý"></canvas>
+          <div>
+            <label class="upload"><input type="file" id="c_file" accept="image/*">Tải ảnh của bạn lên</label>
+            <p class="hint">Hoặc kéo thả ảnh vào trang, hoặc dán bằng Ctrl+V. Vùng sáng của ảnh cho sao lớn, vùng tối cho sao nhỏ.</p>
+          </div>
+        </div>
+      </section>
+      <section class="step">
+        <h2><span>2</span>Chỉnh hiệu ứng</h2>
+        <div class="ctl"><span class="lab">Mật độ sao</span><div class="seg" id="s_density" role="group" aria-label="Mật độ sao"></div></div>
+        <div class="ctl"><span class="lab">Độ mềm của hình</span><div class="seg" id="s_soft" role="group" aria-label="Độ mềm của hình"></div></div>
+        <div class="ctl"><span class="lab">Tách sáng tối</span><div class="seg" id="s_tone" role="group" aria-label="Tách sáng tối"></div><p class="hint">Chọn Mạnh cho ảnh chụp và hình minh họa có nền màu.</p></div>
+      </section>
+      <section class="step">
+        <h2><span>3</span>Chọn màu và khổ</h2>
+        <div class="ctl"><span class="lab">Cặp màu</span><div class="schemes" id="s_scheme" role="group" aria-label="Cặp màu"></div></div>
+        <div class="ctl"><label class="check"><input type="checkbox" id="s_amber">Ngôi sao lớn nhất màu Amber</label></div>
+        <div class="ctl"><span class="lab">Khổ</span><div class="ratios" id="s_ratio" role="group" aria-label="Khổ"></div></div>
+      </section>
+      <details class="adv">
+        <summary>Tuỳ chỉnh nâng cao</summary>
+        <p class="hint">Dành cho thử nghiệm. Các giá trị ở đây nằm ngoài Chuẩn NEG.</p>
+        <div id="panel"></div>
+      </details>
+    </div>
+    <div class="out">
+      <div class="btns"><button class="primary" id="dlsvg">Tải SVG</button><button id="dlpng">Tải PNG</button></div>
+      <div class="links"><button id="cpsvg">Sao chép SVG</button><button id="cpjson">Sao chép thông số</button><button id="reset">Đặt lại Chuẩn NEG</button></div>
+      <p id="msg" role="status"></p>
+    </div>
+  </aside>
 </div>
 <script>
 // ---- Module: ngôi sao lấy từ vector symbol (3 cánh nguyên bản, cánh thứ 4 dựng bằng đối xứng tâm), quy về tâm (0,0), bán kính đầu cánh = 1
@@ -105,51 +183,78 @@ const PRESETS=[
 ];
 let P={...DEF}, upImg=null, last=null;
 
-// ---- UI
+// ---- Giao diện
 const $=id=>document.getElementById(id);
-const CTRL=[
- ["Ảnh nguồn",[["source","select",SOURCES,"Nguồn"],["file","file",null,"Tải ảnh lên"],["blur","range",[0,40,1],"Làm mờ"],["contrast","range",[0.5,2.5,0.05],"Tương phản"],["gamma","range",[0.4,2.5,0.05],"Gamma"],["invert","range",[0,1,1],"Đảo sáng tối"]]],
- ["Lưới module",[["grid","select",GRIDS,"Kiểu lưới"],["cell","range",[14,90,1],"Bước lưới"],["angle","range",[-45,45,0.5],"Góc lưới"],["anglechips","chips",[0,-5.5,39.5,45],""]]],
+const SHORT=()=>Math.min(...RATIOS[P.ratio]);
+const DENS={"Mịn":45,"Chuẩn":30,"Thưa":20}, SOFT={"Nét":3,"Vừa":10,"Mềm":18}, TONE={"Chuẩn":[1.5,0.7],"Mạnh":[2.2,0.4]};
+const SRC3={symbol:"Symbol",glow:"Quầng sáng",linear:"Chuyển sắc"};
+const SCHEMES={"Đêm":["Orient 800","Trắng"],"Orient":["Orient 500","Trắng"],"Sâu":["Orient 900","Orient 100"],"Giấy":["Neutral 50","Orient 500"]};
+let dens="Chuẩn";
+const ADV=[
+ ["Ảnh nguồn",[["source","select",SOURCES,"Nguồn"],["blur","range",[0,40,1],"Làm mờ"],["contrast","range",[0.5,2.5,0.05],"Tương phản"],["gamma","range",[0.4,2.5,0.05],"Gamma"],["invert","range",[0,1,1],"Đảo sáng tối"]]],
+ ["Lưới",[["grid","select",GRIDS,"Kiểu lưới"],["cell","range",[14,90,1],"Bước lưới"],["angle","range",[-45,45,0.5],"Góc lưới"]]],
  ["Ngôi sao",[["min","range",[0,0.6,0.01],"Cỡ nhỏ nhất"],["max","range",[0.4,1.6,0.01],"Cỡ lớn nhất"],["levels","range",[0,8,1],"Số cấp cỡ"],["cutoff","range",[0,0.5,0.01],"Ngưỡng ẩn"],["twinkle","range",[0,1,0.05],"Lấp lánh"],["drop","range",[0,0.8,0.05],"Bỏ ngẫu nhiên"],["follow","range",[0,1,1],"Xoay theo lưới"],["seed","range",[1,50,1],"Hạt ngẫu nhiên"]]],
- ["Màu và khổ",[["bg","sw",null,"Nền"],["fg","sw",null,"Sao"],["amber","range",[0,30,1],"Số sao Amber"],["ratio","select",Object.fromEntries(Object.keys(RATIOS).map(k=>[k,k])),"Khổ"]]]
+ ["Màu",[["bg","sw",null,"Nền"],["fg","sw",null,"Sao"],["amber","range",[0,30,1],"Số sao Amber"]]]
 ];
+function el(tag,props,...kids){const e=document.createElement(tag);Object.assign(e,props||{});e.append(...kids);return e;}
+function seg(id,names,fn){const box=$(id);for(const n of names){const b=el("button",{type:"button",textContent:n});b.dataset.v=n;b.addEventListener("click",()=>{fn(n);sync();render();});box.appendChild(b);}}
+function mark(id,v){$(id).querySelectorAll("button").forEach(b=>{const on=b.dataset.v===v;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});}
+function autoInvert(){P.invert=(P.source==="upload"&&COLORS[P.bg]==="#F7F4EE")?1:0;}
 function buildUI(){
+  $("mark").setAttribute("d",starPath(1));
+  seg("s_source",Object.values(SRC3),n=>{P.source=Object.keys(SRC3).find(k=>SRC3[k]===n);autoInvert();});
+  $("s_source").querySelectorAll("button").forEach(b=>b.dataset.v=Object.keys(SRC3).find(k=>SRC3[k]===b.textContent));
+  seg("s_density",Object.keys(DENS),n=>{dens=n;P.cell=Math.round(SHORT()/DENS[n]);});
+  seg("s_soft",Object.keys(SOFT),n=>{P.blur=SOFT[n];});
+  seg("s_tone",Object.keys(TONE),n=>{[P.contrast,P.gamma]=TONE[n];});
+  const sc=$("s_scheme");for(const [n,[bg,fg]] of Object.entries(SCHEMES)){const b=el("button",{type:"button"});b.dataset.v=n;
+    b.innerHTML=`<i style="background:${COLORS[bg]}"><svg viewBox="-1 -1 2 2" aria-hidden="true"><path d="${starPath(1)}" fill="${COLORS[fg]}" transform="rotate(-5.5)"/></svg></i>${n}`;
+    b.addEventListener("click",()=>{P.bg=bg;P.fg=fg;autoInvert();sync();render();});sc.appendChild(b);}
+  const rt=$("s_ratio");for(const [n,[w,h]] of Object.entries(RATIOS)){const k=28/Math.max(w,h);const b=el("button",{type:"button"});b.dataset.v=n;
+    b.innerHTML=`<span class="box"><i style="width:${Math.round(w*k)}px;height:${Math.round(h*k)}px"></i></span>${n}`;
+    b.addEventListener("click",()=>{P.ratio=n;if(dens)P.cell=Math.round(SHORT()/DENS[dens]);sync();render();});rt.appendChild(b);}
+  $("s_amber").addEventListener("change",e=>{P.amber=e.target.checked?1:0;sync();render();});
   const pn=$("panel");
-  for(const [title,items] of CTRL){
-    const fs=document.createElement("fieldset");const lg=document.createElement("legend");lg.textContent=title;fs.appendChild(lg);
-    for(const [key,type,opt,label] of items){
-      const row=document.createElement("div");row.className="row";row.dataset.key=key;if(LOCKED.includes(key))row.dataset.lock="1";
-      const lb=document.createElement("label");lb.textContent=label;lb.htmlFor="c_"+key;row.appendChild(lb);
-      if(type==="range"){const i=document.createElement("input");i.type="range";i.id="c_"+key;[i.min,i.max,i.step]=opt;const o=document.createElement("output");o.id="o_"+key;
-        i.addEventListener("input",()=>{P[key]=+i.value;sync();render();});row.append(i,o);}
-      else if(type==="select"){const s=document.createElement("select");s.id="c_"+key;for(const [v,t] of Object.entries(opt)){const op=document.createElement("option");op.value=v;op.textContent=t;s.appendChild(op);}
-        s.addEventListener("change",()=>{P[key]=s.value;sync();render();});row.appendChild(s);}
-      else if(type==="file"){const i=document.createElement("input");i.type="file";i.accept="image/*";i.id="c_file";
-        i.addEventListener("change",()=>{loadFile(i.files[0]);});row.appendChild(i);}
-      else if(type==="chips"){const c=document.createElement("div");c.className="chips";c.style.gridColumn="2 / 4";for(const a of opt){const b=document.createElement("button");b.type="button";b.textContent=String(a).replace(".",",")+"°";b.addEventListener("click",()=>{P.angle=a;sync();render();});c.appendChild(b);}row.appendChild(c);}
-      else if(type==="sw"){const c=document.createElement("div");c.className="chips";c.style.gridColumn="2 / 4";c.id="c_"+key;for(const [n,h] of Object.entries(COLORS)){const b=document.createElement("button");b.type="button";b.className="sw";b.style.background=h;b.title=n+" "+h;b.setAttribute("aria-label",label+": "+n);b.dataset.v=n;b.addEventListener("click",()=>{P[key]=n;sync();render();});c.appendChild(b);}row.appendChild(c);}
-      fs.appendChild(row);
-    }
-    pn.appendChild(fs);
-  }
-  const pr=$("presets");PRESETS.forEach(([name,o],i)=>{const b=document.createElement("button");b.type="button";b.textContent=name;b.addEventListener("click",()=>{P={...(i===0?DEF:BASE),...o};if(i>0)setMode(false);if(P.source==="upload"&&!upImg)P.source="glow";pr.querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");sync();render();});pr.appendChild(b);});
-  pr.firstChild.classList.add("on");
+  for(const [title,items] of ADV){pn.appendChild(el("h3",{textContent:title}));
+    for(const [key,type,opt,label] of items){const row=el("div",{className:"row"});row.appendChild(el("label",{textContent:label,htmlFor:"c_"+key}));
+      if(type==="range"){const i=el("input",{type:"range",id:"c_"+key});[i.min,i.max,i.step]=opt;const o=el("output",{id:"o_"+key});i.addEventListener("input",()=>{P[key]=+i.value;sync();render();});row.append(i,o);}
+      else if(type==="select"){const s=el("select",{id:"c_"+key});for(const [v,t] of Object.entries(opt))s.appendChild(el("option",{value:v,textContent:t}));s.addEventListener("change",()=>{P[key]=s.value;sync();render();});row.appendChild(s);}
+      else{const c=el("div",{className:"sws",id:"c_"+key});for(const [n,h] of Object.entries(COLORS)){const b=el("button",{type:"button",title:n+" "+h});b.style.background=h;b.setAttribute("aria-label",label+": "+n);b.dataset.v=n;b.addEventListener("click",()=>{P[key]=n;sync();render();});c.appendChild(b);}row.appendChild(c);}
+      pn.appendChild(row);}}
 }
-const FMT={invert:v=>v?"Có":"Không",follow:v=>v?"Có":"Không",levels:v=>v?v:"Liên tục",angle:v=>String(v).replace(".",",")+"°",cell:v=>v+"px",blur:v=>v+"px"};
+const FMT={invert:v=>v?"Có":"Không",follow:v=>v?"Có":"Không",levels:v=>v?v:"Liên tục",angle:v=>String(v).replace(".",",")+"°",cell:v=>v+" px",blur:v=>v+" px"};
 function sync(){
   for(const k of Object.keys(P)){const c=$("c_"+k);if(!c)continue;
-    if(c.tagName==="DIV"){c.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===P[k]));}
+    if(c.tagName==="DIV")c.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===P[k]));
     else{c.value=P[k];const o=$("o_"+k);if(o)o.textContent=FMT[k]?FMT[k](P[k]):String(Math.round(P[k]*100)/100).replace(".",",");}}
+  dens=Object.keys(DENS).find(n=>Math.round(SHORT()/DENS[n])===P.cell)||"";
+  mark("s_source",P.source);mark("s_density",dens);
+  mark("s_soft",Object.keys(SOFT).find(n=>SOFT[n]===P.blur)||"");
+  mark("s_tone",Object.keys(TONE).find(n=>TONE[n][0]===P.contrast&&TONE[n][1]===P.gamma)||"");
+  mark("s_scheme",Object.keys(SCHEMES).find(n=>SCHEMES[n][0]===P.bg&&SCHEMES[n][1]===P.fg)||"");
+  mark("s_ratio",P.ratio);$("s_amber").checked=P.amber>0;
 }
-function setMode(simple){$("panel").classList.toggle("simple",simple);$("m_s").classList.toggle("on",simple);$("m_f").classList.toggle("on",!simple);
-  if(simple){for(const k of LOCKED)if(k in DEF)P[k]=DEF[k];sync();render();}}
 function loadFile(f){
   if(!f)return;if(!/^image\//.test(f.type)){say("Tệp này không phải ảnh. Dùng PNG, JPG, WebP hoặc SVG.");return;}
-  const rd=new FileReader();
-  rd.onerror=()=>say("Không đọc được tệp ảnh.");
+  const rd=new FileReader();rd.onerror=()=>say("Không đọc được tệp ảnh.");
   rd.onload=()=>{const img=new Image();img.onerror=()=>say("Không mở được ảnh này.");
-    img.onload=()=>{upImg=img;P.source="upload";if(P.blur>4)P.blur=2;sync();render();say("Đang dùng ảnh: "+f.name);};img.src=rd.result;};
+    img.onload=()=>{upImg=img;P.source="upload";P.blur=SOFT["Nét"];P.cell=Math.round(SHORT()/DENS["Mịn"]);[P.contrast,P.gamma]=TONE["Mạnh"];autoInvert();sync();render();say("Đang dùng ảnh "+f.name);};img.src=rd.result;};
   rd.readAsDataURL(f);
+}
+function render(){
+  const o=compute();last=o;const cv=$("out");cv.width=o.W;cv.height=o.H;const x=cv.getContext("2d");
+  x.fillStyle=COLORS[P.bg];x.fillRect(0,0,o.W,o.H);
+  for(const pass of [0,1]){x.fillStyle=pass?COLORS["Amber 400"]:COLORS[P.fg];for(const s of o.stars){if(!!s.am!==!!pass)continue;x.save();x.translate(s.x,s.y);x.rotate(o.rot);x.scale(s.r,s.r);x.fill(STAR);x.restore();}}
+  let mn=Infinity,mx=0;for(const s of o.stars){mn=Math.min(mn,s.r*2);mx=Math.max(mx,s.r*2);}
+  const n=o.stars.length,slots=Math.round(o.W*o.H/(P.cell*P.cell*(P.grid==="hex"?0.866:1))),fill=n/slots,w=[];
+  if(n<150)w.push("Quá ít sao để đọc ra hình. Tăng mật độ sao.");
+  if(n>3000)w.push("Quá nhiều sao, tệp SVG sẽ nặng. Giảm mật độ sao.");
+  if(fill>0.9)w.push("Sao phủ kín khổ, không còn nền phẳng. Chọn tách sáng tối Mạnh, hoặc dùng ảnh có nền tối.");
+  if(n&&mx-mn<P.cell*0.36)w.push("Các sao gần cùng cỡ. Tăng độ mềm của hình hoặc đổi ảnh có chuyển sắc rõ hơn.");
+  if(P.source==="upload"&&COLORS[P.bg]==="#F7F4EE")w.push("Ảnh chụp trên nền Giấy dễ mất chủ thể. Dùng cặp màu nền tối.");
+  if(contrast(COLORS[P.fg],COLORS[P.bg])<3)w.push("Sao và nền quá gần màu nhau, chỉ hợp làm nền chìm.");
+  const f1=v=>v.toFixed(1).replace(".",",");
+  $("report").innerHTML=`<span class="verdict${w.length?" bad":""}">${w.length?"Cần chỉnh":"Đạt chuẩn"}</span><span>Số sao <b>${n}</b></span><span>Cỡ sao <b>${n?f1(mn):0} đến ${n?f1(mx):0} px</b></span><span>Độ phủ <b>${Math.min(100,Math.round(fill*100))}%</b></span><span>Khổ <b>${o.W} × ${o.H} px</b></span>`+(w.length?`<ul class="notes">${w.map(t=>`<li>${t}</li>`).join("")}</ul>`:"");
 }
 // ---- Ảnh nguồn -> trường độ sáng
 function rng(seed){let s=seed*2654435761>>>0;return()=>{s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
@@ -204,19 +309,6 @@ function compute(){
   idx.forEach(i=>stars[i].am=1);
   return {W,H,stars,rot};
 }
-function render(){
-  const o=compute();last=o;const cv=$("out");cv.width=o.W;cv.height=o.H;const x=cv.getContext("2d");
-  x.fillStyle=COLORS[P.bg];x.fillRect(0,0,o.W,o.H);
-  for(const pass of [0,1]){x.fillStyle=pass?COLORS["Amber 400"]:COLORS[P.fg];for(const s of o.stars){if(!!s.am!==!!pass)continue;x.save();x.translate(s.x,s.y);x.rotate(o.rot);x.scale(s.r,s.r);x.fill(STAR);x.restore();}}
-  let mn=Infinity,mx=0;for(const s of o.stars){mn=Math.min(mn,s.r*2);mx=Math.max(mx,s.r*2);}
-  const n=o.stars.length;
-  $("meta").innerHTML=`<span>Số sao <b>${n}</b></span><span>Sao nhỏ nhất <b>${n?mn.toFixed(1):0}px</b></span><span>Sao lớn nhất <b>${n?mx.toFixed(1):0}px</b></span><span>Khổ <b>${o.W}×${o.H}</b></span><span>Tương phản sao/nền <b>${contrast(COLORS[P.fg],COLORS[P.bg]).toFixed(1)}</b></span>`;
-  const w=[];if(n&&mn<5)w.push(`Sao nhỏ nhất ${mn.toFixed(1)}px: dưới 5px đầu cánh cắt vuông không còn đọc được. Tăng "Cỡ nhỏ nhất" hoặc "Ngưỡng ẩn".`);
-  if(n>6000)w.push(`${n} sao: tệp SVG sẽ nặng và Figma xử lý chậm. Tăng "Bước lưới".`);
-  if(P.max>1.38&&P.grid==="square")w.push("Cỡ lớn nhất trên 1,38: các sao kề nhau chạm cánh và dính thành mảng.");
-  if(contrast(COLORS[P.fg],COLORS[P.bg])<3)w.push("Tương phản sao/nền dưới 3: hiệu ứng chỉ nên làm nền chìm, không mang nội dung.");
-  $("warn").hidden=!w.length;$("warn").textContent=w.join(" ");
-}
 function lum(h){const v=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(c=>c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4));return .2126*v[0]+.7152*v[1]+.0722*v[2];}
 function contrast(a,b){const [x,y]=[lum(a),lum(b)].sort((m,n)=>n-m);return (x+.05)/(y+.05);}
 // ---- Xuất
@@ -232,17 +324,17 @@ function wire(){
   $("dlpng").addEventListener("click",()=>$("out").toBlob(b=>save("neg-star-halftone.png",b),"image/png"));
   $("cpsvg").addEventListener("click",()=>copy(svg(),"Đã sao chép SVG. Dán thẳng vào Figma."));
   $("cpjson").addEventListener("click",()=>copy(JSON.stringify(P),"Đã sao chép thông số."));
-  $("m_s").addEventListener("click",()=>setMode(true));$("m_f").addEventListener("click",()=>setMode(false));
-  const box=document.querySelector(".canvasbox");
+  $("reset").addEventListener("click",()=>{P={...DEF};sync();render();say("Đã đặt lại Chuẩn NEG.");});
+  $("c_file").addEventListener("change",e=>loadFile(e.target.files[0]));
+  const box=$("view");
   document.addEventListener("dragover",e=>{e.preventDefault();box.classList.add("drop");});
   document.addEventListener("dragleave",e=>{if(!e.relatedTarget)box.classList.remove("drop");});
   document.addEventListener("drop",e=>{e.preventDefault();box.classList.remove("drop");const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)loadFile(f);});
   document.addEventListener("paste",e=>{const it=[...(e.clipboardData?e.clipboardData.items:[])].find(x=>x.kind==="file"&&/^image\//.test(x.type));if(it){e.preventDefault();loadFile(it.getAsFile());}});
   const u=window.claude&&window.claude.use;if(u)window.claude.use("downloads").then(d=>{DL=d;}).catch(()=>{});
 }
-buildUI();sync();wire();setMode(true);
-window.__neg={set:o=>{P={...DEF,...o};sync();render();},PRESETS,svg};
+buildUI();sync();wire();render();
+window.__neg={set:o=>{P={...DEF,...o};sync();render();},PRESETS,svg,loadFile};
 </script>
-
 </body>
 </html>
