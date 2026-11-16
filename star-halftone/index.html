@@ -144,6 +144,7 @@ p.links{margin:18px 0 8px}
         <div class="ctl"><span class="lab">Mật độ sao</span><div class="seg" id="s_density" role="group" aria-label="Mật độ sao"></div></div>
         <div class="ctl"><span class="lab">Độ mềm của hình</span><div class="seg" id="s_soft" role="group" aria-label="Độ mềm của hình"></div></div>
         <div class="ctl"><span class="lab">Tách sáng tối</span><div class="seg" id="s_tone" role="group" aria-label="Tách sáng tối"></div><p class="hint">Chọn Mạnh cho ảnh chụp và hình minh họa có nền màu.</p></div>
+        <div class="ctl"><label class="check"><input type="checkbox" id="s_invert">Đảo sáng tối</label><p class="hint">Sao lớn chuyển sang vùng tối của ảnh. Chỉ đảo trong khung ảnh, phần khổ ngoài ảnh vẫn để trống.</p></div>
       </section>
       <section class="step">
         <h2><span>3</span>Chọn màu và khổ</h2>
@@ -208,7 +209,7 @@ const DENS={"Mịn":45,"Chuẩn":30,"Thưa":20}, SOFT={"Nét":3,"Vừa":10,"Mề
 const SRC3={symbol:"Symbol",glow:"Quầng sáng",linear:"Chuyển sắc"};
 let dens="Chuẩn";
 const ADV=[
- ["Ảnh nguồn",[["source","select",SOURCES,"Nguồn"],["blur","range",[0,40,1],"Làm mờ"],["contrast","range",[0.5,2.5,0.05],"Tương phản"],["gamma","range",[0.4,2.5,0.05],"Gamma"],["invert","range",[0,1,1],"Đảo sáng tối"]]],
+ ["Ảnh nguồn",[["source","select",SOURCES,"Nguồn"],["blur","range",[0,40,1],"Làm mờ"],["contrast","range",[0.5,2.5,0.05],"Tương phản"],["gamma","range",[0.4,2.5,0.05],"Gamma"]]],
  ["Lưới",[["grid","select",GRIDS,"Kiểu lưới"],["cell","range",[14,90,1],"Bước lưới"],["angle","range",[-45,45,0.5],"Góc lưới"]]],
  ["Ngôi sao",[["min","range",[0,0.6,0.01],"Cỡ nhỏ nhất"],["max","range",[0.4,1.6,0.01],"Cỡ lớn nhất"],["levels","range",[0,8,1],"Số cấp cỡ"],["cutoff","range",[0,0.5,0.01],"Ngưỡng ẩn"],["twinkle","range",[0,1,0.05],"Lấp lánh"],["drop","range",[0,0.8,0.05],"Bỏ ngẫu nhiên"],["follow","range",[0,1,1],"Xoay theo lưới"],["seed","range",[1,50,1],"Hạt ngẫu nhiên"]]],
  ["Màu",[["amber","range",[0,30,1],"Số sao Amber"]]]
@@ -218,7 +219,7 @@ function seg(id,names,fn){const box=$(id);for(const n of names){const b=el("butt
 function mark(id,v){$(id).querySelectorAll("button").forEach(b=>{const on=b.dataset.v===v;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});}
 const okPair=(fg,bg)=>contrast(COLORS[fg],COLORS[bg])>=2;
 const lightBg=()=>lum(COLORS[P.bg])>lum(COLORS[P.fg]);
-function autoInvert(){P.invert=(P.source==="upload"&&lightBg())?1:0;}
+function autoInvert(){}
 function buildUI(){
   $("mark").setAttribute("d",starPath(1));
   seg("s_source",Object.values(SRC3),n=>{P.source=Object.keys(SRC3).find(k=>SRC3[k]===n);autoInvert();});
@@ -232,6 +233,7 @@ function buildUI(){
   const rt=$("s_ratio");for(const [n,[w,h]] of Object.entries(RATIOS)){const k=28/Math.max(w,h);const b=el("button",{type:"button"});b.dataset.v=n;
     b.innerHTML=`<span class="box"><i style="width:${Math.round(w*k)}px;height:${Math.round(h*k)}px"></i></span>${n}`;
     b.addEventListener("click",()=>{P.ratio=n;if(dens)P.cell=Math.round(SHORT()/DENS[dens]);sync();render();});rt.appendChild(b);}
+  $("s_invert").addEventListener("change",e=>{P.invert=e.target.checked?1:0;sync();render();});
   $("s_amber").addEventListener("change",e=>{P.amber=e.target.checked?1:0;sync();render();});
   const pn=$("panel");
   for(const [title,items] of ADV){pn.appendChild(el("h3",{textContent:title}));
@@ -254,7 +256,7 @@ function sync(){
   $("pairname").textContent="Nền "+P.bg+", sao "+P.fg+".";
   const am=P.bg==="Amber 400"||P.fg==="Amber 400";$("s_amber").disabled=am;if(am)P.amber=0;
   const up=P.source==="upload"&&!!upImg;$("place").hidden=!up;$("view").classList.toggle("move",up);
-  mark("s_ratio",P.ratio);$("s_amber").checked=P.amber>0;
+  mark("s_ratio",P.ratio);$("s_amber").checked=P.amber>0;$("s_invert").checked=!!P.invert;
 }
 let upRange=[0,1];
 function levels(img){const w=200,h=Math.max(1,Math.round(200*img.height/img.width)),c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.fillStyle="#000";x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);
@@ -277,7 +279,7 @@ function render(){
   if(n>3000)w.push("Quá nhiều sao, tệp SVG sẽ nặng. Giảm mật độ sao.");
   if(fill>0.9)w.push("Sao phủ kín khổ, không còn nền phẳng. Chọn tách sáng tối Mạnh, hoặc dùng ảnh có nền tối.");
   if(n&&mx-mn<P.cell*0.36)w.push("Các sao gần cùng cỡ. Tăng độ mềm của hình hoặc đổi ảnh có chuyển sắc rõ hơn.");
-  if(P.source==="upload"&&lightBg())w.push("Ảnh chụp trên nền sáng hơn sao dễ mất chủ thể. Dùng nền tối hơn sao.");
+  if(P.source==="upload"&&lightBg()&&!P.invert)w.push("Nền sáng hơn sao nên hình đang hiện dạng âm bản. Bật Đảo sáng tối để chủ thể hiện đúng.");
   if(contrast(COLORS[P.fg],COLORS[P.bg])<3)w.push("Sao và nền quá gần màu nhau, chỉ hợp làm nền chìm.");
   const f1=v=>v.toFixed(1).replace(".",",");
   $("report").innerHTML=`<span class="verdict${w.length?" bad":""}">${w.length?"Cần chỉnh":"Đạt chuẩn"}</span><span>Số sao <b>${n}</b></span><span>Cỡ sao <b>${n?f1(mn):0} đến ${n?f1(mx):0} px</b></span><span>Độ phủ <b>${Math.min(100,Math.round(fill*100))}%</b></span><span>Khổ <b>${o.W} × ${o.H} px</b></span>`+(w.length?`<ul class="notes">${w.map(t=>`<li>${t}</li>`).join("")}</ul>`:"");
@@ -300,10 +302,12 @@ function field(W,H){
   else if(P.source==="upload"&&upImg){const s=Math.max(fw/upImg.width,fh/upImg.height)*P.zoom;g.drawImage(upImg,(fw-upImg.width*s)/2+P.ox*fw,(fh-upImg.height*s)/2+P.oy*fh,upImg.width*s,upImg.height*s);}
   if(bl>0&&"filter" in x){x.filter=`blur(${bl}px)`;}
   x.drawImage(d,0,0);x.filter="none";
+  // mặt nạ khung ảnh: chỉ vùng có ảnh mới bị đảo sáng tối, vùng ngoài khung ảnh luôn trống
+  let M=null;if(P.invert){const mc=document.createElement("canvas");mc.width=c.width;mc.height=c.height;const mx=mc.getContext("2d");if(bl>0&&"filter" in mx)mx.filter=`blur(${bl}px)`;mx.drawImage(d,0,0);M=mx.getImageData(pad,pad,fw,fh).data;}
   const id=x.getImageData(pad,pad,fw,fh).data, L=new Float32Array(fw*fh);
   let lo=0,hi=1;
   if(P.source==="upload"&&upImg){[lo,hi]=upRange;}
-  for(let i=0;i<fw*fh;i++){let v=(0.2126*id[i*4]+0.7152*id[i*4+1]+0.0722*id[i*4+2])/255;v=Math.min(1,Math.max(0,(v-lo)/(hi-lo)));v=(v-0.5)*P.contrast+0.5;v=Math.min(1,Math.max(0,v));v=Math.pow(v,1/P.gamma);if(P.invert)v=1-v;L[i]=v;}
+  for(let i=0;i<fw*fh;i++){let v=(0.2126*id[i*4]+0.7152*id[i*4+1]+0.0722*id[i*4+2])/255;v=Math.min(1,Math.max(0,(v-lo)/(hi-lo)));v=(v-0.5)*P.contrast+0.5;v=Math.min(1,Math.max(0,v));v=Math.pow(v,1/P.gamma);if(P.invert)v=(1-v)*M[i*4+3]/255;L[i]=v;}
   // xem trước
   const pv=$("srcprev");pv.width=160;pv.height=Math.round(160*H/W);const pc=pv.getContext("2d");const im=pc.createImageData(fw,fh);for(let i=0;i<fw*fh;i++){const v=L[i]*255;im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=v;im.data[i*4+3]=255;}
   const t=document.createElement("canvas");t.width=fw;t.height=fh;t.getContext("2d").putImageData(im,0,0);pc.drawImage(t,0,0,pv.width,pv.height);
