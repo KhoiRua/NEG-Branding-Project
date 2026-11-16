@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEG Star Halftone</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: bảng điều khiển cố định bên trái, khung thử chiếm phần còn lại; xếp dọc ở màn hẹp */
+:root{
+  --bg:#F7F4EE; --panel:#FFFFFF; --fg:#1F1E1B; --muted:#5F6B70; --line:#D6E6EC; --brand:#005E80; --brand-fg:#FFFFFF; --amber:#FFB81C; --chip:#EEF4F6;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#00212C; --panel:#002F42; --fg:#EEF4F6; --muted:#9DBCC8; --line:#00465F; --brand:#5C9DB5; --brand-fg:#00212C; --amber:#FFB81C; --chip:#003E51; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#00212C; --panel:#002F42; --fg:#EEF4F6; --muted:#9DBCC8; --line:#00465F; --brand:#5C9DB5; --brand-fg:#00212C; --amber:#FFB81C; --chip:#003E51; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.45;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;justify-content:space-between}
+h1{font-size:20px;font-weight:700;margin:0;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted);max-width:70ch}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+button,.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:7px 12px;border-radius:6px;cursor:pointer}
+button:hover{border-color:var(--brand)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+button.on{background:var(--brand);color:var(--brand-fg);border-color:var(--brand)}
+button.primary{background:var(--brand);color:var(--brand-fg);border-color:var(--brand)}
+.main{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.main{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:14px}
+fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:9px;min-width:0}
+legend{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);padding:0;margin-bottom:8px}
+.row{display:grid;grid-template-columns:118px minmax(0,1fr) 46px;gap:8px;align-items:center}
+.row label{color:var(--muted)}
+.row output{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.row select,.row input[type=file]{grid-column:2 / 4;font:inherit;min-width:0;width:100%;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg)}
+input[type=range]{width:100%;accent-color:var(--brand);min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{padding:4px 9px;font-weight:500;font-size:12px}
+.sw{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid var(--line)}
+.sw.on{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber)}
+.stage{display:flex;flex-direction:column;gap:12px;min-width:0}
+.canvasbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;justify-content:center}
+.panel.simple [data-lock]{display:none}
+.canvasbox.drop{outline:3px dashed var(--amber);outline-offset:-6px}
+canvas#out{max-width:100%;max-height:74vh;height:auto;width:auto;display:block}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:500}
+.warn{color:var(--fg);background:color-mix(in srgb,var(--amber) 25%,transparent);border-radius:6px;padding:6px 10px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#msg{color:var(--muted)}
+.src{display:flex;gap:12px;align-items:center}
+canvas#srcprev{width:96px;height:auto;border:1px solid var(--line);border-radius:6px;flex:none}
+.src span{color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>NEG Star Halftone</h1><p>Halftone dùng ngôi sao 4 cánh của logo làm module. Chế độ Đơn giản khoá các thông số theo Chuẩn NEG và chỉ để lại phần cần chọn. Chế độ Đầy đủ mở mọi thông số để thử nghiệm.</p></div>
+    <div class="chips" role="group" aria-label="Chế độ"><button type="button" id="m_s">Đơn giản</button><button type="button" id="m_f">Đầy đủ</button></div>
+  </header>
+  <div class="presets" id="presets" role="group" aria-label="Mẫu cấu hình sẵn"></div>
+  <div class="main">
+    <div class="panel" id="panel"></div>
+    <div class="stage">
+      <div class="canvasbox"><canvas id="out" width="1080" height="1080" aria-label="Kết quả halftone"></canvas></div>
+      <div class="meta" id="meta"></div>
+      <div class="warn" id="warn" hidden></div>
+      <div class="src"><canvas id="srcprev" width="160" height="160"></canvas><span>Ảnh nguồn sau khi làm mờ và chỉnh tương phản. Vùng sáng cho sao lớn, vùng tối cho sao nhỏ. Để dùng ảnh của anh: bấm "Tải ảnh lên", kéo thả ảnh vào trang, hoặc dán ảnh bằng Ctrl+V.</span></div>
+      <div class="actions">
+        <button class="primary" id="dlsvg">Tải SVG</button><button id="dlpng">Tải PNG</button><button id="cpsvg">Sao chép SVG</button><button id="cpjson">Sao chép thông số</button><span id="msg" role="status"></span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// ---- Module: ngôi sao lấy từ vector symbol (3 cánh nguyên bản, cánh thứ 4 dựng bằng đối xứng tâm), quy về tâm (0,0), bán kính đầu cánh = 1
+const STAR_RAW=[[631.4,386.5],[561.5,340.3,553.6,257.4,613.3,198.6],[584.5,174.8],[538.4,244.9,455.8,252.9,397.3,192.9],[373.5,221.8],[443.4,268.1,451.3,351,391.6,409.8],[420.4,433.6],[466.5,363.5,549.1,355.5,607.6,415.5]];
+const SC=[502.45,304.15], SR=152.6;
+function starPath(k){ // k: hệ số nhân, trả về chuỗi path quanh gốc
+  return STAR_RAW.map((seg,i)=>{const n=[];for(let j=0;j<seg.length;j+=2){n.push(((seg[j]-SC[0])/SR*k).toFixed(3),((seg[j+1]-SC[1])/SR*k).toFixed(3));}
+    return (i===0?"M":seg.length===2?"L":"C")+n.join(" ");}).join("")+"Z";}
+const STAR=new Path2D(starPath(1));
+const SYM="M 0 0 C 49.5 0 98.2 12.3 141.9 35.7 C 185.5 59.1 222.6 92.9 250 134.2 C 285.6 80.5 337.6 39.7 398.2 17.8 C 458.8 -4.1 524.9 -5.8 586.6 12.8 C 648.3 31.4 702.4 69.4 740.8 121.1 C 779.2 172.8 800 235.6 800 300 L 800 800 L 509.3 800 C 387.6 800 343.3 733.3 343.3 647.2 C 343.3 548.6 411.1 434.7 470.6 394.4 C 484.4 384.7 496.5 378.8 510.3 377.4 C 544 374.2 578.3 385.5 607.6 415.5 L 631.4 386.5 C 561.5 340.3 553.6 257.4 613.3 198.6 L 584.5 174.8 C 538.4 244.9 455.8 252.9 397.3 192.9 L 373.5 221.8 C 408.4 244.9 427.9 277.2 431.1 311.1 C 437.4 362.5 388.9 411.1 355.7 450 C 282.4 526.4 211.2 598.9 215.9 716.7 C 217.1 746.7 223.7 780.6 232 800 L 0 800 Z";
+const NEG="M 509.3 800 C 387.6 800 343.3 733.3 343.3 647.2 C 343.3 548.6 411.1 434.7 470.6 394.4 C 484.4 384.7 496.5 378.8 510.3 377.4 C 544 374.2 578.3 385.5 607.6 415.5 L 631.4 386.5 C 561.5 340.3 553.6 257.4 613.3 198.6 L 584.5 174.8 C 538.4 244.9 455.8 252.9 397.3 192.9 L 373.5 221.8 C 408.4 244.9 427.9 277.2 431.1 311.1 C 437.4 362.5 388.9 411.1 355.7 450 C 282.4 526.4 211.2 598.9 215.9 716.7 C 217.1 746.7 223.7 780.6 232 800 Z";
+
+const COLORS={"Orient 900":"#022E3C","Orient 800":"#003E51","Orient 500":"#005E80","Orient 300":"#5C9DB5","Orient 100":"#D6E6EC","Neutral 50":"#F7F4EE","Trắng":"#FFFFFF","Amber 400":"#FFB81C"};
+const RATIOS={"1:1":[1080,1080],"4:5":[1080,1350],"16:9":[1600,900],"9:16":[1080,1920]};
+const SOURCES={glow:"Quầng sáng",linear:"Chuyển sắc chéo",symbol:"Symbol làm mờ",trail:"Vệt sao làm mờ",galaxy:"Dải ngân hà",upload:"Ảnh tải lên"};
+const GRIDS={square:"Vuông",brick:"So le",hex:"Lục giác",radial:"Đồng tâm",spiral:"Xoắn ốc",scatter:"Rải sao"};
+const BASE={source:"glow",blur:8,contrast:1,gamma:1,invert:0,grid:"square",cell:36,angle:-5.5,min:0,max:1,levels:0,cutoff:0.06,twinkle:0,drop:0,follow:0,bg:"Orient 800",fg:"Trắng",amber:1,ratio:"1:1",seed:7};
+// Chuẩn NEG: bộ thông số anh Khôi chọn ngày 15/11/2026
+const DEF={source:"symbol",blur:10,contrast:1.5,gamma:0.7,invert:0,grid:"brick",cell:36,angle:-5.5,min:0.05,max:0.85,levels:0,cutoff:0.05,twinkle:0,drop:0,follow:1,bg:"Orient 800",fg:"Trắng",amber:0,ratio:"1:1",seed:1};
+const LOCKED=["contrast","gamma","invert","grid","angle","anglechips","min","max","levels","cutoff","twinkle","drop","follow","seed"];
+const PRESETS=[
+ ["Chuẩn NEG",{}],
+ ["Quầng sáng · lưới vuông",{}],
+ ["Symbol mờ · so le 5 cấp",{source:"symbol",blur:14,grid:"brick",cell:30,angle:0,levels:5,bg:"Orient 500",fg:"Trắng",amber:0,cutoff:0.1}],
+ ["Dải ngân hà · rải sao",{source:"galaxy",blur:10,grid:"scatter",cell:34,angle:0,twinkle:0.6,drop:0.25,max:1.15,bg:"Orient 900",fg:"Orient 100",amber:3,ratio:"16:9",cutoff:0.08}],
+ ["Vệt sao · lục giác",{source:"trail",blur:18,grid:"hex",cell:28,angle:-5.5,max:1.2,bg:"Orient 800",fg:"Orient 300",amber:1,ratio:"4:5",contrast:1.3}],
+ ["Chuyển sắc · lưới 39,5°",{source:"linear",blur:0,grid:"square",cell:44,angle:39.5,levels:6,max:1.38,follow:1,bg:"Neutral 50",fg:"Orient 500",amber:0,ratio:"16:9",cutoff:0.04}],
+ ["Quầng sáng · đồng tâm",{source:"glow",blur:6,grid:"radial",cell:34,angle:0,max:1.1,bg:"Orient 500",fg:"Amber 400",amber:0,gamma:1.4}],
+ ["Quầng sáng · xoắn ốc",{source:"glow",blur:6,grid:"spiral",cell:30,angle:0,twinkle:0.3,bg:"Orient 900",fg:"Trắng",amber:1,ratio:"4:5"}]
+];
+let P={...DEF}, upImg=null, last=null;
+
+// ---- UI
+const $=id=>document.getElementById(id);
+const CTRL=[
+ ["Ảnh nguồn",[["source","select",SOURCES,"Nguồn"],["file","file",null,"Tải ảnh lên"],["blur","range",[0,40,1],"Làm mờ"],["contrast","range",[0.5,2.5,0.05],"Tương phản"],["gamma","range",[0.4,2.5,0.05],"Gamma"],["invert","range",[0,1,1],"Đảo sáng tối"]]],
+ ["Lưới module",[["grid","select",GRIDS,"Kiểu lưới"],["cell","range",[14,90,1],"Bước lưới"],["angle","range",[-45,45,0.5],"Góc lưới"],["anglechips","chips",[0,-5.5,39.5,45],""]]],
+ ["Ngôi sao",[["min","range",[0,0.6,0.01],"Cỡ nhỏ nhất"],["max","range",[0.4,1.6,0.01],"Cỡ lớn nhất"],["levels","range",[0,8,1],"Số cấp cỡ"],["cutoff","range",[0,0.5,0.01],"Ngưỡng ẩn"],["twinkle","range",[0,1,0.05],"Lấp lánh"],["drop","range",[0,0.8,0.05],"Bỏ ngẫu nhiên"],["follow","range",[0,1,1],"Xoay theo lưới"],["seed","range",[1,50,1],"Hạt ngẫu nhiên"]]],
+ ["Màu và khổ",[["bg","sw",null,"Nền"],["fg","sw",null,"Sao"],["amber","range",[0,30,1],"Số sao Amber"],["ratio","select",Object.fromEntries(Object.keys(RATIOS).map(k=>[k,k])),"Khổ"]]]
+];
+function buildUI(){
+  const pn=$("panel");
+  for(const [title,items] of CTRL){
+    const fs=document.createElement("fieldset");const lg=document.createElement("legend");lg.textContent=title;fs.appendChild(lg);
+    for(const [key,type,opt,label] of items){
+      const row=document.createElement("div");row.className="row";row.dataset.key=key;if(LOCKED.includes(key))row.dataset.lock="1";
+      const lb=document.createElement("label");lb.textContent=label;lb.htmlFor="c_"+key;row.appendChild(lb);
+      if(type==="range"){const i=document.createElement("input");i.type="range";i.id="c_"+key;[i.min,i.max,i.step]=opt;const o=document.createElement("output");o.id="o_"+key;
+        i.addEventListener("input",()=>{P[key]=+i.value;sync();render();});row.append(i,o);}
+      else if(type==="select"){const s=document.createElement("select");s.id="c_"+key;for(const [v,t] of Object.entries(opt)){const op=document.createElement("option");op.value=v;op.textContent=t;s.appendChild(op);}
+        s.addEventListener("change",()=>{P[key]=s.value;sync();render();});row.appendChild(s);}
+      else if(type==="file"){const i=document.createElement("input");i.type="file";i.accept="image/*";i.id="c_file";
+        i.addEventListener("change",()=>{loadFile(i.files[0]);});row.appendChild(i);}
+      else if(type==="chips"){const c=document.createElement("div");c.className="chips";c.style.gridColumn="2 / 4";for(const a of opt){const b=document.createElement("button");b.type="button";b.textContent=String(a).replace(".",",")+"°";b.addEventListener("click",()=>{P.angle=a;sync();render();});c.appendChild(b);}row.appendChild(c);}
+      else if(type==="sw"){const c=document.createElement("div");c.className="chips";c.style.gridColumn="2 / 4";c.id="c_"+key;for(const [n,h] of Object.entries(COLORS)){const b=document.createElement("button");b.type="button";b.className="sw";b.style.background=h;b.title=n+" "+h;b.setAttribute("aria-label",label+": "+n);b.dataset.v=n;b.addEventListener("click",()=>{P[key]=n;sync();render();});c.appendChild(b);}row.appendChild(c);}
+      fs.appendChild(row);
+    }
+    pn.appendChild(fs);
+  }
+  const pr=$("presets");PRESETS.forEach(([name,o],i)=>{const b=document.createElement("button");b.type="button";b.textContent=name;b.addEventListener("click",()=>{P={...(i===0?DEF:BASE),...o};if(i>0)setMode(false);if(P.source==="upload"&&!upImg)P.source="glow";pr.querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");sync();render();});pr.appendChild(b);});
+  pr.firstChild.classList.add("on");
+}
+const FMT={invert:v=>v?"Có":"Không",follow:v=>v?"Có":"Không",levels:v=>v?v:"Liên tục",angle:v=>String(v).replace(".",",")+"°",cell:v=>v+"px",blur:v=>v+"px"};
+function sync(){
+  for(const k of Object.keys(P)){const c=$("c_"+k);if(!c)continue;
+    if(c.tagName==="DIV"){c.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===P[k]));}
+    else{c.value=P[k];const o=$("o_"+k);if(o)o.textContent=FMT[k]?FMT[k](P[k]):String(Math.round(P[k]*100)/100).replace(".",",");}}
+}
+function setMode(simple){$("panel").classList.toggle("simple",simple);$("m_s").classList.toggle("on",simple);$("m_f").classList.toggle("on",!simple);
+  if(simple){for(const k of LOCKED)if(k in DEF)P[k]=DEF[k];sync();render();}}
+function loadFile(f){
+  if(!f)return;if(!/^image\//.test(f.type)){say("Tệp này không phải ảnh. Dùng PNG, JPG, WebP hoặc SVG.");return;}
+  const rd=new FileReader();
+  rd.onerror=()=>say("Không đọc được tệp ảnh.");
+  rd.onload=()=>{const img=new Image();img.onerror=()=>say("Không mở được ảnh này.");
+    img.onload=()=>{upImg=img;P.source="upload";if(P.blur>4)P.blur=2;sync();render();say("Đang dùng ảnh: "+f.name);};img.src=rd.result;};
+  rd.readAsDataURL(f);
+}
+// ---- Ảnh nguồn -> trường độ sáng
+function rng(seed){let s=seed*2654435761>>>0;return()=>{s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
+function field(W,H){
+  const fw=320,fh=Math.round(320*H/W),pad=60;
+  const c=document.createElement("canvas");c.width=fw+pad*2;c.height=fh+pad*2;const x=c.getContext("2d");
+  x.fillStyle="#000";x.fillRect(0,0,c.width,c.height);
+  const k=fw/320, bl=P.blur*k;
+  const d=document.createElement("canvas");d.width=c.width;d.height=c.height;const g=d.getContext("2d");
+  g.translate(pad,pad);const m=Math.min(fw,fh);
+  if(P.source==="glow"){const r=g.createRadialGradient(fw*0.68,fh*0.32,0,fw*0.68,fh*0.32,Math.max(fw,fh)*0.8);r.addColorStop(0,"#fff");r.addColorStop(0.25,"#bbb");r.addColorStop(1,"#000");g.fillStyle=r;g.fillRect(-pad,-pad,c.width,c.height);}
+  else if(P.source==="linear"){const r=g.createLinearGradient(0,fh,fw,0);r.addColorStop(0,"#000");r.addColorStop(1,"#fff");g.fillStyle=r;g.fillRect(-pad,-pad,c.width,c.height);}
+  else if(P.source==="symbol"){const s=m*0.62/800;g.translate((fw-800*s)/2,(fh-800*s)/2);g.scale(s,s);const r=g.createLinearGradient(0,800,800,0);r.addColorStop(0,"#666");r.addColorStop(1,"#fff");g.fillStyle=r;g.fill(new Path2D(SYM));}
+  else if(P.source==="trail"){const s=Math.max(fw,fh)*1.25/800;g.translate(fw*0.66-502*s,fh*0.3-302*s);g.scale(s,s);const r=g.createLinearGradient(230,800,600,180);r.addColorStop(0,"#222");r.addColorStop(0.7,"#ccc");r.addColorStop(1,"#fff");g.fillStyle=r;g.fill(new Path2D(NEG));}
+  else if(P.source==="galaxy"){const R=rng(P.seed+99);for(let i=0;i<26;i++){const t=R(),px=fw*(0.05+0.9*t)+(R()-.5)*fw*0.2,py=fh*(0.9-0.8*t)+(R()-.5)*fh*0.28,rr=m*(0.05+R()*0.2);const r=g.createRadialGradient(px,py,0,px,py,rr);const a=0.25+R()*0.5;r.addColorStop(0,`rgba(255,255,255,${a})`);r.addColorStop(1,"rgba(255,255,255,0)");g.fillStyle=r;g.fillRect(px-rr,py-rr,rr*2,rr*2);}}
+  else if(P.source==="upload"&&!upImg){const r=g.createLinearGradient(0,fh,fw,0);r.addColorStop(0,"#000");r.addColorStop(1,"#888");g.fillStyle=r;g.fillRect(-pad,-pad,c.width,c.height);}
+  else if(P.source==="upload"&&upImg){const s=Math.max(fw/upImg.width,fh/upImg.height);g.drawImage(upImg,(fw-upImg.width*s)/2,(fh-upImg.height*s)/2,upImg.width*s,upImg.height*s);}
+  if(bl>0&&"filter" in x){x.filter=`blur(${bl}px)`;}
+  x.drawImage(d,0,0);x.filter="none";
+  const id=x.getImageData(pad,pad,fw,fh).data, L=new Float32Array(fw*fh);
+  let lo=0,hi=1;
+  if(P.source==="upload"&&upImg){const hs=new Uint32Array(256);for(let i=0;i<fw*fh;i++)hs[Math.round(0.2126*id[i*4]+0.7152*id[i*4+1]+0.0722*id[i*4+2])]++;
+    const cut=fw*fh*0.01;let a=0,k=0;while(k<255&&a+hs[k]<=cut)a+=hs[k++];lo=k/255;a=0;k=255;while(k>0&&a+hs[k]<=cut)a+=hs[k--];hi=k/255;if(hi-lo<0.02){lo=0;hi=1;}}
+  for(let i=0;i<fw*fh;i++){let v=(0.2126*id[i*4]+0.7152*id[i*4+1]+0.0722*id[i*4+2])/255;v=Math.min(1,Math.max(0,(v-lo)/(hi-lo)));v=(v-0.5)*P.contrast+0.5;v=Math.min(1,Math.max(0,v));v=Math.pow(v,1/P.gamma);if(P.invert)v=1-v;L[i]=v;}
+  // xem trước
+  const pv=$("srcprev");pv.width=160;pv.height=Math.round(160*H/W);const pc=pv.getContext("2d");const im=pc.createImageData(fw,fh);for(let i=0;i<fw*fh;i++){const v=L[i]*255;im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=v;im.data[i*4+3]=255;}
+  const t=document.createElement("canvas");t.width=fw;t.height=fh;t.getContext("2d").putImageData(im,0,0);pc.drawImage(t,0,0,pv.width,pv.height);
+  return (px,py)=>{const ix=Math.min(fw-1,Math.max(0,Math.floor(px/W*fw))),iy=Math.min(fh-1,Math.max(0,Math.floor(py/H*fh)));return L[iy*fw+ix];};
+}
+// ---- Điểm lưới
+function points(W,H){
+  const c=P.cell,a=P.angle*Math.PI/180,ca=Math.cos(a),sa=Math.sin(a),cx=W/2,cy=H/2,D=Math.hypot(W,H)/2+c,out=[];
+  const put=(u,v)=>{const x=cx+u*ca-v*sa,y=cy+u*sa+v*ca;if(x>-c&&x<W+c&&y>-c&&y<H+c)out.push([x,y]);};
+  const R=rng(P.seed);
+  if(P.grid==="square"||P.grid==="scatter"){const n=Math.ceil(D/c);for(let j=-n;j<=n;j++)for(let i=-n;i<=n;i++){if(P.grid==="scatter")put((i+(R()-.5)*0.9)*c,(j+(R()-.5)*0.9)*c);else put(i*c,j*c);}}
+  else if(P.grid==="brick"){const n=Math.ceil(D/c);for(let j=-n;j<=n;j++)for(let i=-n;i<=n;i++)put((i+(j&1?0.5:0))*c,j*c);}
+  else if(P.grid==="hex"){const rh=c*0.866,n=Math.ceil(D/rh);for(let j=-n;j<=n;j++)for(let i=-n;i<=n;i++)put((i+(j&1?0.5:0))*c,j*rh);}
+  else if(P.grid==="radial"){put(0,0);for(let r=c;r<D;r+=c){const k=Math.max(6,Math.round(2*Math.PI*r/c));for(let i=0;i<k;i++){const t=i/k*2*Math.PI;put(r*Math.cos(t),r*Math.sin(t));}}}
+  else if(P.grid==="spiral"){const ga=Math.PI*(3-Math.sqrt(5)),N=Math.ceil(D*D/(c*c)*3.4);for(let i=0;i<N;i++){const r=c*0.54*Math.sqrt(i),t=i*ga;put(r*Math.cos(t),r*Math.sin(t));}}
+  return out;
+}
+// ---- Tính danh sách sao
+function compute(){
+  const [W,H]=RATIOS[P.ratio],F=field(W,H),pts=points(W,H),R=rng(P.seed+1),stars=[];
+  const rot=(P.follow?P.angle:0)*Math.PI/180;
+  for(const [x,y] of pts){let v=F(x,y);const r1=R(),r2=R();
+    if(v<P.cutoff)continue;if(r1<P.drop)continue;
+    let q=v;if(P.levels>1)q=Math.round(v*(P.levels-1))/(P.levels-1);else if(P.levels===1)q=1;
+    let s=P.min+(P.max-P.min)*q;s*=1-P.twinkle*r2;const rad=s*P.cell/2;
+    if(rad<0.4)continue;stars.push({x,y,r:rad,v});}
+  const idx=stars.map((s,i)=>i).sort((a,b)=>stars[b].r-stars[a].r||stars[b].v-stars[a].v).slice(0,P.amber);
+  idx.forEach(i=>stars[i].am=1);
+  return {W,H,stars,rot};
+}
+function render(){
+  const o=compute();last=o;const cv=$("out");cv.width=o.W;cv.height=o.H;const x=cv.getContext("2d");
+  x.fillStyle=COLORS[P.bg];x.fillRect(0,0,o.W,o.H);
+  for(const pass of [0,1]){x.fillStyle=pass?COLORS["Amber 400"]:COLORS[P.fg];for(const s of o.stars){if(!!s.am!==!!pass)continue;x.save();x.translate(s.x,s.y);x.rotate(o.rot);x.scale(s.r,s.r);x.fill(STAR);x.restore();}}
+  let mn=Infinity,mx=0;for(const s of o.stars){mn=Math.min(mn,s.r*2);mx=Math.max(mx,s.r*2);}
+  const n=o.stars.length;
+  $("meta").innerHTML=`<span>Số sao <b>${n}</b></span><span>Sao nhỏ nhất <b>${n?mn.toFixed(1):0}px</b></span><span>Sao lớn nhất <b>${n?mx.toFixed(1):0}px</b></span><span>Khổ <b>${o.W}×${o.H}</b></span><span>Tương phản sao/nền <b>${contrast(COLORS[P.fg],COLORS[P.bg]).toFixed(1)}</b></span>`;
+  const w=[];if(n&&mn<5)w.push(`Sao nhỏ nhất ${mn.toFixed(1)}px: dưới 5px đầu cánh cắt vuông không còn đọc được. Tăng "Cỡ nhỏ nhất" hoặc "Ngưỡng ẩn".`);
+  if(n>6000)w.push(`${n} sao: tệp SVG sẽ nặng và Figma xử lý chậm. Tăng "Bước lưới".`);
+  if(P.max>1.38&&P.grid==="square")w.push("Cỡ lớn nhất trên 1,38: các sao kề nhau chạm cánh và dính thành mảng.");
+  if(contrast(COLORS[P.fg],COLORS[P.bg])<3)w.push("Tương phản sao/nền dưới 3: hiệu ứng chỉ nên làm nền chìm, không mang nội dung.");
+  $("warn").hidden=!w.length;$("warn").textContent=w.join(" ");
+}
+function lum(h){const v=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(c=>c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4));return .2126*v[0]+.7152*v[1]+.0722*v[2];}
+function contrast(a,b){const [x,y]=[lum(a),lum(b)].sort((m,n)=>n-m);return (x+.05)/(y+.05);}
+// ---- Xuất
+function svg(){const o=last,deg=(o.rot*180/Math.PI).toFixed(2);const grp=am=>o.stars.filter(s=>!!s.am===am).map(s=>`<path d="${starPath(1)}" transform="translate(${s.x.toFixed(1)} ${s.y.toFixed(1)})${+deg?` rotate(${deg})`:""} scale(${s.r.toFixed(2)})"/>`).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${o.W}" height="${o.H}" viewBox="0 0 ${o.W} ${o.H}"><rect width="${o.W}" height="${o.H}" fill="${COLORS[P.bg]}"/><g fill="${COLORS[P.fg]}">${grp(false)}</g><g fill="${COLORS["Amber 400"]}">${grp(true)}</g></svg>`;}
+const say=t=>{$("msg").textContent=t;};
+let DL=null;
+async function save(name,blob){if(!DL){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);say("Đã lưu "+name);return;}
+  try{await DL.save({filename:name,data:blob});say("Đã lưu "+name);}catch(e){say(e&&e.code==="declined"?"Đã huỷ lưu.":"Không lưu được: "+((e&&e.code)||"lỗi"));}}
+async function copy(t,ok){try{await navigator.clipboard.writeText(t);say(ok);}catch(e){say("Không sao chép được trong chế độ xem này.");}}
+function wire(){
+  $("dlsvg").addEventListener("click",()=>save("neg-star-halftone.svg",new Blob([svg()],{type:"image/svg+xml"})));
+  $("dlpng").addEventListener("click",()=>$("out").toBlob(b=>save("neg-star-halftone.png",b),"image/png"));
+  $("cpsvg").addEventListener("click",()=>copy(svg(),"Đã sao chép SVG. Dán thẳng vào Figma."));
+  $("cpjson").addEventListener("click",()=>copy(JSON.stringify(P),"Đã sao chép thông số."));
+  $("m_s").addEventListener("click",()=>setMode(true));$("m_f").addEventListener("click",()=>setMode(false));
+  const box=document.querySelector(".canvasbox");
+  document.addEventListener("dragover",e=>{e.preventDefault();box.classList.add("drop");});
+  document.addEventListener("dragleave",e=>{if(!e.relatedTarget)box.classList.remove("drop");});
+  document.addEventListener("drop",e=>{e.preventDefault();box.classList.remove("drop");const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)loadFile(f);});
+  document.addEventListener("paste",e=>{const it=[...(e.clipboardData?e.clipboardData.items:[])].find(x=>x.kind==="file"&&/^image\//.test(x.type));if(it){e.preventDefault();loadFile(it.getAsFile());}});
+  const u=window.claude&&window.claude.use;if(u)window.claude.use("downloads").then(d=>{DL=d;}).catch(()=>{});
+}
+buildUI();sync();wire();setMode(true);
+window.__neg={set:o=>{P={...DEF,...o};sync();render();},PRESETS,svg};
+</script>
+
+</body>
+</html>
