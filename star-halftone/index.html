@@ -217,8 +217,8 @@ const RATIOS={"1:1":[1080,1080],"4:5":[1080,1350],"16:9":[1600,900],"9:16":[1080
 const SOURCES={glow:"Quầng sáng",linear:"Chuyển sắc chéo",symbol:"Symbol làm mờ",trail:"Vệt sao làm mờ",galaxy:"Dải ngân hà",upload:"Ảnh tải lên"};
 const GRIDS={square:"Vuông",brick:"So le",hex:"Lục giác",radial:"Đồng tâm",spiral:"Xoắn ốc",scatter:"Rải sao"};
 const BASE={source:"glow",blur:8,contrast:1,gamma:1,invert:0,grid:"square",cell:36,angle:-5.5,min:0,max:1,levels:0,cutoff:0.06,twinkle:0,drop:0,follow:0,bg:"Orient 800",fg:"Trắng",amber:1,ratio:"1:1",seed:7};
-// Chuẩn NEG: bộ thông số anh Khôi chọn ngày 15/11/2026
-const DEF={source:"symbol",blur:10,contrast:1.5,gamma:0.7,invert:0,grid:"brick",cell:36,angle:-5.5,min:0.05,max:0.85,levels:0,cutoff:0.05,twinkle:0,drop:0,follow:1,bg:"Orient 800",fg:"Trắng",amber:0,ratio:"1:1",seed:1};
+// Chuẩn NEG: bộ thông số anh Khôi chốt ngày 18/11/2026
+const DEF={source:"linear",blur:3,contrast:1,gamma:0.5,invert:0,grid:"square",cell:32,angle:0,min:0,max:1,levels:4,cutoff:0.02,twinkle:0,drop:0,follow:0,bg:"Orient 800",fg:"Trắng",amber:0,ratio:"1:1",seed:1};
 const LOCKED=["contrast","gamma","invert","grid","angle","anglechips","min","max","levels","cutoff","twinkle","drop","follow","seed"];
 const PRESETS=[
  ["Chuẩn NEG",{}],
@@ -235,7 +235,7 @@ let P={...DEF}, upImg=null, last=null;
 // ---- Giao diện
 const $=id=>document.getElementById(id);
 const SHORT=()=>Math.min(...RATIOS[P.ratio]);
-const DENS={"Mịn":45,"Chuẩn":30,"Thưa":20}, SOFT={"Nét":3,"Vừa":10,"Mềm":18}, TONE={"Chuẩn":[1.5,0.7],"Mạnh":[2.2,0.4]};
+const DENS={"Mịn":45,"Chuẩn":33.75,"Thưa":20}, SOFT={"Nét":3,"Vừa":10,"Mềm":18}, TONE={"Chuẩn":[1,0.5],"Mạnh":[2.2,0.4]};
 const SRC3={symbol:"Symbol",glow:"Quầng sáng",linear:"Chuyển sắc"};
 let dens="Chuẩn";
 const ADV=[
